@@ -1,34 +1,70 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+
+import axios from "axios";
+
 
 function App() {
-  const [count, setCount] = useState(0)
 
+  const [image, setImage] = useState(null);
+
+  const [message, setMessage] = useState("");
+
+  const [uploadImageUrl, setUploadedImageUrl] = useState("");
+
+  const handleImageUpload = (e) => {
+
+    setImage(e.target.files[0]);
+
+  }
+
+  const handleUpload = async () => {
+    if(!image){
+      setMessage("Please select an image!!!");
+      return;
+    }
+
+    const formData = new FormData();
+
+    formData.append("image", image);
+
+
+    try {
+      const response = await axios.post("http://localhost:4000/upload", formData,{
+        headers: {
+          'Content-Type' : "multipart/form-data"
+        }
+      }
+    );
+
+    setUploadedImageUrl(response.data.imageUrl);
+    setMessage('Image uploaded')
+    } catch (error) {
+      console.error(error)
+      setMessage('Image Upload Failed!!')
+    }
+
+
+  }
   return (
-    <>
+    <div>
+
       <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        <h2>Image Uploader</h2>
+        <input type="file"  onChange={handleImageUpload}/>
+
+        <button onClick={handleUpload}>Upload</button>
+
+        <p>{message}</p>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+
+      {uploadImageUrl && (
+        <div>
+          <h3>Uploaded Image:</h3>
+          <img src={uploadImageUrl} alt="Uploaded Image" />
+        </div>
+      )}
+
+    </div>
   )
 }
 
